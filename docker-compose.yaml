@@ -1,0 +1,14 @@
+services:
+  turret:
+    container_name: turret-container
+    restart: unless-stopped
+    working_dir: /app
+    command: pnpm dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - target: 3000
+        published: 3000
+    volumes:
+      - ./:/app/

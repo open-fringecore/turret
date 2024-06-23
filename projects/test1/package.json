@@ -1,0 +1,30 @@
+{
+  "name": "test1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.mjs",
+  "scripts": {
+    "start": "NODE_OPTIONS='--dns-result-order=ipv4first' node .",
+    "start:watch": "NODE_OPTIONS='--dns-result-order=ipv4first' nodemon --inspect=0.0.0.0:9230 .",
+    "build": "tsc || exit 0",
+    "build:watch": "tsc --watch --preserveWatchOutput",
+    "dev": "NODE_OPTIONS='--dns-result-order=ipv4first' concurrently npm:build:watch pnpm:start:watch",
+    "prod": "npm run build && npm run start",
+    "test": "mocha"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0"
+  }
+}
