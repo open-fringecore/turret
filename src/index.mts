@@ -56,13 +56,19 @@ app.use(async (req, res) => {
 
     const dockerLocations = currProject.dockerLocations;
 
-    const { stdout, stderr } = await exec(`ls -ld /app/projects/test2`);
+    // try {
+    //     const { stdout, stderr } = await exec(`systemctl start docker`);
+    //     console.log({ stdout, stderr });
+    // } catch (error) {
+    //     console.log(error);
+    // }
+
+    const { stdout, stderr } = await exec(`docker ps -a`);
 
     console.log(stdout, stderr);
 
-
     await Promise.all(dockerLocations.map(async (dockerLocation) => {
-        const { stdout, stderr } = await exec(`cd ${dockerLocation} && docker compose up`);
+        const { stdout, stderr } = await exec(`cd ${dockerLocation} && pnpm install && docker compose up -d`);
     }));
 
     while (true) {
