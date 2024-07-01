@@ -4,23 +4,37 @@ import fs from "fs";
 import { projects } from './projects.mjs';
 import { exec as callbackExec } from 'child_process';
 import { promisify } from 'util';
-import { createConnection } from 'net';
 import httpProxy from 'http-proxy';
 
-const delay = promisify(setTimeout);
+import http from 'http';
 
-// Function to check if a port is open
-function checkPortOpen(host: string, port: number): Promise<boolean> {
-    return new Promise((resolve) => {
-        const socket = createConnection(port, host, () => {
-            socket.end();
-            resolve(true);
-        });
-        socket.on('error', () => {
-            resolve(false);
-        });
+// Function to check if the server is running
+function checkServerIsRunning(url: string, retryInterval: number = 5000): Promise<void> {
+    console.log('Checking: ', url);
+
+    return new Promise((resolve, reject) => {
+        const check = () => {
+            const req = http.get(url, (res) => {
+                if (res.statusCode === 200) {
+                    console.log('Server is running');
+                    resolve();
+                } else {
+                    console.log('Server is running but returned a non-OK status:', res.statusCode);
+                    // setTimeout(check, retryInterval); // Retry after the specified interval
+                }
+            }).on('error', (err) => {
+                console.log('Server is not running, retrying...');
+                setTimeout(check, retryInterval); // Retry after the specified interval
+            });
+
+            req.end();
+        };
+
+        check(); // Initial check
     });
 }
+
+const delay = promisify(setTimeout);
 
 const proxy = httpProxy.createProxyServer({
 });
@@ -71,34 +85,10 @@ app.use(async (req, res) => {
         const { stdout, stderr } = await exec(`cd ${dockerLocation} && pnpm install && docker compose up -d`);
     }));
 
-    while (true) {
-        let isConnected = true;
+    await checkServerIsRunning(`http://localhost:${currProject.port}`);
 
-        // Wrap the proxy.web call in a Promise
-        const proxyWebPromise = new Promise((resolve, reject) => {
-            proxy.web(req, res, { target: `http://${hostname}:${currProject.port}` }, (err) => {
-                if (err) {
-                    // console.log(err);
-                    isConnected = false;
-                    reject(err);
-                } else {
-                    resolve("Success");
-                }
-            });
-        });
+    proxy.web(req, res, { target: `http://localhost:${currProject.port}` });
 
-        try {
-            await proxyWebPromise;
-            // console.log(isConnected);
-            if (isConnected) {
-                break;
-            }
-        } catch (error) {
-            // console.error("Proxy operation failed:", error);
-        }
-
-        await delay(500);
-    }
 });
 
 app.listen(3000, () => {
