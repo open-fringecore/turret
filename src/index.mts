@@ -5,34 +5,7 @@ import { projects } from './projects.mjs';
 import { exec as callbackExec } from 'child_process';
 import { promisify } from 'util';
 import httpProxy from 'http-proxy';
-
-import http from 'http';
-
-// Function to check if the server is running
-function checkServerIsRunning(url: string, retryInterval: number = 5000): Promise<void> {
-    console.log('Checking: ', url);
-
-    return new Promise((resolve, reject) => {
-        const check = () => {
-            const req = http.get(url, (res) => {
-                if (res.statusCode === 200) {
-                    console.log('Server is running');
-                    resolve();
-                } else {
-                    console.log('Server is running but returned a non-OK status:', res.statusCode);
-                    // setTimeout(check, retryInterval); // Retry after the specified interval
-                }
-            }).on('error', (err) => {
-                console.log('Server is not running, retrying...');
-                setTimeout(check, retryInterval); // Retry after the specified interval
-            });
-
-            req.end();
-        };
-
-        check(); // Initial check
-    });
-}
+import net from 'net';
 
 const delay = promisify(setTimeout);
 
@@ -51,6 +24,37 @@ const app = express();
 app.use(cors());
 // app.use(express.json());
 
+function checkPort(host: string, port: number, interval: number) {
+    console.log(`Checking port ${port} every ${interval} milliseconds`);
+
+    setInterval(() => {
+        const socket = new net.Socket();
+
+        socket.setTimeout(5000);  // Set a timeout of 5 seconds
+
+        socket.connect(port, host, () => {
+            console.log(`Port ${port} is open`);
+            socket.destroy();
+        });
+
+        socket.on('error', (err) => {
+            console.log(`Port ${port} is closed or unreachable:`, err.message);
+        });
+
+        socket.on('timeout', () => {
+            console.log(`Connection to port ${port} timed out`);
+            socket.destroy();
+        });
+    }, interval);
+}
+
+// Usage
+const host = 'localhost';
+const port = 5000;
+const checkInterval = 1000;  // Check every 60 seconds
+
+checkPort(host, port, checkInterval);
+
 
 app.use(async (req, res) => {
     const { hostname, path } = req;
@@ -66,28 +70,12 @@ app.use(async (req, res) => {
         return;
     }
 
-    console.log(currProject);
-
     const dockerLocations = currProject.dockerLocations;
 
-    // try {
-    //     const { stdout, stderr } = await exec(`systemctl start docker`);
-    //     console.log({ stdout, stderr });
-    // } catch (error) {
-    //     console.log(error);
-    // }
-
-    const { stdout, stderr } = await exec(`docker ps -a`);
-
-    console.log(stdout, stderr);
-
     await Promise.all(dockerLocations.map(async (dockerLocation) => {
-        const { stdout, stderr } = await exec(`cd ${dockerLocation} && pnpm install && docker compose up -d`);
+        const { stdout, stderr } = await exec(`cd ${dockerLocation} && docker compose up -d`);
+        console.log({ stdout, stderr });
     }));
-
-    await checkServerIsRunning(`http://localhost:${currProject.port}`);
-
-    proxy.web(req, res, { target: `http://localhost:${currProject.port}` });
 
 });
 

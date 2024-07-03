@@ -2,9 +2,9 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "es2022",
+    "outDir": "./dist",
     "rootDir": "./src",
     "moduleResolution": "node",
-    "outDir": "./dist",
     "sourceRoot": "./src",
     "lib": [
       "ES2021"
@@ -94,5 +94,6 @@
   },
   "exclude": [
     "projects",
+    "dist",
   ]
 }
