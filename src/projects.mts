@@ -1,6 +1,7 @@
 export const projects: {
     [hostname: string]: {
         dockerLocations: string[],
+        host: string,
         port: number,
     }
 } = {
@@ -8,12 +9,14 @@ export const projects: {
         dockerLocations: [
             "./projects/test1"
         ],
+        host: "gheu",
         port: 4000
     },
     "127.0.0.1": {
         dockerLocations: [
             "./projects/test2"
         ],
+        host: "meow",
         port: 5000
     }
 }

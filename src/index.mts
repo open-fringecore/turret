@@ -5,7 +5,7 @@ import { projects } from './projects.mjs';
 import { exec as callbackExec } from 'child_process';
 import { promisify } from 'util';
 import httpProxy from 'http-proxy';
-import net from 'net';
+import { handleRequest } from './handleRequest.mjs';
 
 const delay = promisify(setTimeout);
 
@@ -14,7 +14,6 @@ const proxy = httpProxy.createProxyServer({
 
 const exec = promisify(callbackExec);
 
-// making a folder of projects if it doesn't exist
 if (!fs.existsSync('./projects')) {
     fs.mkdirSync('./projects');
 }
@@ -22,39 +21,9 @@ if (!fs.existsSync('./projects')) {
 const app = express();
 
 app.use(cors());
-// app.use(express.json());
 
-function checkPort(host: string, port: number, interval: number) {
-    console.log(`Checking port ${port} every ${interval} milliseconds`);
-
-    setInterval(() => {
-        const socket = new net.Socket();
-
-        socket.setTimeout(5000);  // Set a timeout of 5 seconds
-
-        socket.connect(port, host, () => {
-            console.log(`Port ${port} is open`);
-            socket.destroy();
-        });
-
-        socket.on('error', (err) => {
-            console.log(`Port ${port} is closed or unreachable:`, err.message);
-        });
-
-        socket.on('timeout', () => {
-            console.log(`Connection to port ${port} timed out`);
-            socket.destroy();
-        });
-    }, interval);
-}
-
-// Usage
-const host = 'localhost';
-const port = 5000;
-const checkInterval = 1000;  // Check every 60 seconds
-
-checkPort(host, port, checkInterval);
-
+const checkInterval = Number(process.env.INTERVAL_TO_CHECK) ?? 1000;
+const duration = Number(process.env.TIME_OUT) ?? 60000;
 
 app.use(async (req, res) => {
     const { hostname, path } = req;
@@ -77,6 +46,17 @@ app.use(async (req, res) => {
         console.log({ stdout, stderr });
     }));
 
+    const isServerOn: boolean = await handleRequest(currProject.host, currProject.port, checkInterval, duration);
+
+    if (isServerOn) {
+        proxy.web(req, res, { target: `http://${currProject.host}:${currProject.port}` });
+    } else {
+        res.json({
+            hostname: hostname,
+            message: "Server is down",
+            time: new Date().toISOString(),
+        });
+    };
 });
 
 app.listen(3000, () => {

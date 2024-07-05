@@ -12,3 +12,16 @@ services:
         published: 5000
     volumes:
       - /home/bmqube/Documents/turret/projects/test2:/app/
+    networks:
+      test2_network: {}
+      turret_network:
+        aliases:
+          - meow
+
+networks:
+  test2_network:
+    name: test2_network
+    driver: bridge
+  turret_network:
+    name: turret_network
+    external: true
