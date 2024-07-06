@@ -5,8 +5,8 @@ import { projects } from './projects.mjs';
 import { exec as callbackExec } from 'child_process';
 import { promisify } from 'util';
 import httpProxy from 'http-proxy';
-import { handleRequest } from './handleRequest.mjs';
-import { processYamlFile } from './processYamlFiles.mjs';
+import { checkServer } from './utils/checkServer.mjs';
+import { processYamlFile } from './utils/processYamlFiles.mjs';
 
 const delay = promisify(setTimeout);
 
@@ -22,22 +22,18 @@ if (!fs.existsSync('./projects')) {
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 const checkInterval = Number(process.env.INTERVAL_TO_CHECK) ?? 1000;
 const duration = Number(process.env.TIME_OUT) ?? 60000;
 
-app.use(async (req, res) => {
+app.use(async (req, res, next) => {
     const { hostname, path } = req;
 
     const currProject = projects[hostname];
 
     if (!currProject) {
-        res.json({
-            hostname: hostname,
-            message: "Ei hostname e project nai bhai",
-            time: new Date().toISOString(),
-        });
-        return;
+        return next();
     }
 
     const dockerLocations = currProject.dockerLocations;
@@ -47,7 +43,7 @@ app.use(async (req, res) => {
         console.log({ stdout, stderr });
     }));
 
-    const isServerOn: boolean = await handleRequest(currProject.host, currProject.port, checkInterval, duration);
+    const isServerOn: boolean = await checkServer(currProject.host, currProject.port, checkInterval, duration);
 
     if (isServerOn) {
         proxy.web(req, res, { target: `http://${currProject.host}:${currProject.port}` });
@@ -58,6 +54,40 @@ app.use(async (req, res) => {
             time: new Date().toISOString(),
         });
     };
+});
+
+app.post('/git', async (req, res) => {
+    console.log(req.body);
+
+    const { repo_name } = req.body;
+
+    console.log({ repo_name });
+
+    if (!repo_name) {
+        res.status(400).json({
+            message: "Repo name missing",
+            time: new Date().toISOString(),
+        });
+        return;
+    }
+
+    const repoPath = `./projects/${repo_name}.git`;
+
+    if (fs.existsSync(repoPath)) {
+        res.status(409).json({
+            message: "Repo already exists",
+            time: new Date().toISOString(),
+        });
+        return;
+    }
+
+    fs.mkdirSync(repoPath);
+    await exec(`cd ${repoPath} && git init --bare`);
+
+    return res.status(201).json({
+        message: "Created the repo",
+        time: new Date().toISOString(),
+    });
 });
 
 // processYamlFile('./projects/test1/docker-compose.yaml');

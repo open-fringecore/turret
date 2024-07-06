@@ -1,6 +1,6 @@
 import net from 'net';
 
-export async function handleRequest(host: string, port: number, interval: number, duration: number): Promise<boolean> {
+export async function checkServer(host: string, port: number, interval: number, duration: number): Promise<boolean> {
     console.log(`Checking http://${host}:${port} every ${interval} milliseconds for ${duration} milliseconds`);
 
     return new Promise((resolve) => {
