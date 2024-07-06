@@ -6,6 +6,7 @@ import { exec as callbackExec } from 'child_process';
 import { promisify } from 'util';
 import httpProxy from 'http-proxy';
 import { handleRequest } from './handleRequest.mjs';
+import { processYamlFile } from './processYamlFiles.mjs';
 
 const delay = promisify(setTimeout);
 
@@ -58,6 +59,8 @@ app.use(async (req, res) => {
         });
     };
 });
+
+// processYamlFile('./projects/test1/docker-compose.yaml');
 
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');

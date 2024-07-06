@@ -4,12 +4,10 @@ services:
     restart: unless-stopped
     working_dir: /app
     command: pnpm dev
-    # user: "1000:1000"
     environment:
+      - ABSOLUTE_PATH=${ABSOLUTE_PATH:-/home/bmqube/Documents/turret}
       - INTERVAL_TO_CHECK=1000
       - TIME_OUT=60000
-      - DOCKER_HOST=unix:///run/user/1000/docker.sock
-    #   - XDG_RUNTIME_DIR=/run/user/1000
     build:
       context: .
       dockerfile: Dockerfile
@@ -18,7 +16,7 @@ services:
         published: 3000
     volumes:
       - ./:/app/
-      - /run/user/1000/docker.sock:/run/user/1000/docker.sock
+      - /run/user/1000/docker.sock:/var/run/docker.sock
     networks:
       - turret_network
 

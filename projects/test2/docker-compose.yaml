@@ -1,15 +1,11 @@
 services:
   test:
-    container_name: test-container-2
     restart: unless-stopped
     working_dir: /app
     command: pnpm dev
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - target: 5000
-        published: 5000
     volumes:
       - /home/bmqube/Documents/turret/projects/test2:/app/
     networks:
