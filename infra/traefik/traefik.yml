@@ -1,0 +1,28 @@
+entryPoints:
+  http:
+    address: :80
+
+  https:
+    address: :443
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: omran.jamal@fringecore.sh
+      storage: /traefik-storage/acme.json
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      httpChallenge:
+        entryPoint: http
+
+providers:
+  redis:
+    endpoint:
+      - "redis:6379"
+      password: ${REDIS_PASSWORD:-redis}
+
+log:
+  format: json
+  level: WARN
+
+metrics:
+  prometheus: {}

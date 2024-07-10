@@ -1,12 +1,11 @@
-import express from 'express';
-import cors from 'cors';
-import fs from "fs";
-import { projects } from './projects.mjs';
 import { exec as callbackExec } from 'child_process';
-import { promisify } from 'util';
+import cors from 'cors';
+import express from 'express';
+import fs from "fs";
 import httpProxy from 'http-proxy';
+import { promisify } from 'util';
+import { projects } from './projects.mjs';
 import { checkServer } from './utils/checkServer.mjs';
-import { processYamlFile } from './utils/processYamlFiles.mjs';
 
 const delay = promisify(setTimeout);
 
@@ -57,7 +56,7 @@ app.use(async (req, res, next) => {
 });
 
 app.post('/git', async (req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
 
     const { repo_name } = req.body;
 
@@ -92,6 +91,6 @@ app.post('/git', async (req, res) => {
 
 // processYamlFile('./projects/test1/docker-compose.yaml');
 
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+app.listen(8000, () => {
+    console.log('Server is running on http://localhost:8000');
 });
