@@ -30,6 +30,7 @@
     "dockerode": "^4.0.2",
     "express": "^4.19.2",
     "http-proxy": "^1.18.1",
+    "ioredis": "^5.4.1",
     "js-yaml": "^4.1.0",
     "nodemon": "^3.1.0"
   }

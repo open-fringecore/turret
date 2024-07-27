@@ -1,0 +1,26 @@
+http:
+  routers:
+    chain-lock-server_router:
+      service: chain-lock-server
+      rule: Host(`mudi-mis-alpha.fringecore.sh`)
+      entryPoints:
+        - https
+      tls:
+        certResolver: letsencrypt
+        options: tlsoptions
+
+    chain-lock-server_router_insecure:
+      service: chain-lock-server
+      rule: Host(`mudi-mis-alpha.fringecore.sh`)
+      entryPoints:
+        - http
+
+  services:
+    chain-lock-server:
+      loadBalancer:
+        servers:
+          - url: http://chain-lock-server:3000/
+tls:
+  options:
+    tlsoptions:
+      minVersion: VersionTLS12

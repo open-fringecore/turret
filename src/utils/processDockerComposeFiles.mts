@@ -16,7 +16,7 @@ interface DockerCompose {
 
 const ABSOLUTE_PATH = process.env.ABSOLUTE_PATH ?? '/app';
 
-export async function processYamlFile(filePath: string): Promise<void> {
+export async function processDockerComposeFiles(filePath: string): Promise<void> {
     try {
         const fileContents = await fs.readFile(filePath, 'utf8');
 
@@ -67,8 +67,8 @@ export async function processYamlFile(filePath: string): Promise<void> {
         const newYaml = yaml.dump(doc);
         // Write modified YAML to a new file
         await fs.writeFile('modified-docker-compose.yml', newYaml, 'utf8');
-        console.log('YAML file processed successfully.');
+        console.log('Docker Compose file processed successfully.');
     } catch (error) {
-        console.error('Error processing YAML file:', error);
+        console.error('Error processing Docker Compose file:', error);
     }
 }

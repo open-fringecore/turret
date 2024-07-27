@@ -6,11 +6,17 @@ import httpProxy from 'http-proxy';
 import { promisify } from 'util';
 import { projects } from './projects.mjs';
 import { checkServer } from './utils/checkServer.mjs';
+import { registerTraefikService } from "./boot/registerTraefikService.mjs";
+import { processTraefikFiles } from "./utils/processTraefikFiles.mjs";
+import { processDockerComposeFiles } from './utils/processDockerComposeFiles.mjs';
 
-const delay = promisify(setTimeout);
+// await registerTraefikService();
+await processTraefikFiles('./demo.yml')
+// await processDockerComposeFiles('./projects/test1/docker-compose.yaml');
 
-const proxy = httpProxy.createProxyServer({
-});
+// const delay = promisify(setTimeout);
+
+const proxy = httpProxy.createProxyServer({});
 
 const exec = promisify(callbackExec);
 
@@ -88,8 +94,6 @@ app.post('/git', async (req, res) => {
         time: new Date().toISOString(),
     });
 });
-
-// processYamlFile('./projects/test1/docker-compose.yaml');
 
 app.listen(8000, () => {
     console.log('Server is running on http://localhost:8000');

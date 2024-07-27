@@ -8,6 +8,7 @@ services:
       - ABSOLUTE_PATH=${ABSOLUTE_PATH:-/home/bmqube/Documents/turret}
       - INTERVAL_TO_CHECK=1000
       - TIME_OUT=60000
+      - REDIS_URL=redis://default:${REDIS_PASSWORD:-redis}@redis:6379
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,16 +21,16 @@ services:
     networks:
       - turret_network
 
-  # redis:
-  #   container_name: redis-container
-  #   ports:
-  #     - target: 6379
-  #       published: 6379
-  #   image: bitnami/redis:6.0
-  #   environment:
-  #     REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
-  #   networks:
-  #     - turret_network
+  redis:
+   container_name: redis-container
+   ports:
+     - target: 6379
+       published: 6379
+   image: bitnami/redis:6.0
+   environment:
+     REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
+   networks:
+     - turret_network
 
 networks:
   turret_network:
