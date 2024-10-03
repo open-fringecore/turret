@@ -44,7 +44,7 @@ export async function processDockerComposeFiles(filePath: string): Promise<void>
                 doc.services[service].networks = {};
             }
 
-            console.log(doc.services[service].networks);
+            // console.log(doc.services[service].networks);
 
             if (!doc.services[service].networks['turret_network']) {
                 doc.services[service].networks['turret_network'] = { aliases: ['turret-alias'] };

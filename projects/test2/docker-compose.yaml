@@ -7,16 +7,10 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - /home/bmqube/Documents/turret/projects/test2:/app/
-    networks:
-      test2_network: {}
-      turret_network:
-        aliases:
-          - meow
-
+      - /home/bmqube/Documents/turret/projects/test1:/app/
 networks:
-  test2_network:
-    name: test2_network
+  test1_network:
+    name: test1_network
     driver: bridge
   turret_network:
     name: turret_network

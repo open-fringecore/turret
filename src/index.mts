@@ -7,14 +7,13 @@ import { promisify } from 'util';
 import { projects } from './projects.mjs';
 import { checkServer } from './utils/checkServer.mjs';
 import { registerTraefikService } from "./boot/registerTraefikService.mjs";
-import { processTraefikFiles } from "./utils/processTraefikFiles.mjs";
 import { processDockerComposeFiles } from './utils/processDockerComposeFiles.mjs';
 
 // await registerTraefikService();
-await processTraefikFiles('./demo.yml')
-// await processDockerComposeFiles('./projects/test1/docker-compose.yaml');
+// await processTraefikFiles('./demo.yml')
+await processDockerComposeFiles('./projects/test1/docker-compose.yaml');
 
-// const delay = promisify(setTimeout);
+const delay = promisify(setTimeout);
 
 const proxy = httpProxy.createProxyServer({});
 
@@ -30,7 +29,7 @@ app.use(cors());
 app.use(express.json());
 
 const checkInterval = Number(process.env.INTERVAL_TO_CHECK) ?? 1000;
-const duration = Number(process.env.TIME_OUT) ?? 60000;
+const timeeout = Number(process.env.TIME_OUT) ?? 60000;
 
 app.use(async (req, res, next) => {
     const { hostname, path } = req;
@@ -48,7 +47,7 @@ app.use(async (req, res, next) => {
         console.log({ stdout, stderr });
     }));
 
-    const isServerOn: boolean = await checkServer(currProject.host, currProject.port, checkInterval, duration);
+    const isServerOn: boolean = await checkServer(currProject.host, currProject.port, checkInterval, timeeout);
 
     if (isServerOn) {
         proxy.web(req, res, { target: `http://${currProject.host}:${currProject.port}` });
@@ -94,6 +93,35 @@ app.post('/git', async (req, res) => {
         time: new Date().toISOString(),
     });
 });
+
+app.delete('/git', async (req, res) => {
+    const { repo_name } = req.body;
+
+    if (!repo_name) {
+        res.status(400).json({
+            message: "Repo name missing",
+            time: new Date().toISOString(),
+        });
+        return;
+    }
+
+    const repoPath = `./projects/${repo_name}.git`;
+
+    if (!fs.existsSync(repoPath)) {
+        res.status(404).json({
+            message: "Repo does not exist",
+            time: new Date().toISOString(),
+        });
+        return;
+    }
+
+    fs.rmdirSync(repoPath, { recursive: true });
+
+    return res.status(200).json({
+        message: "Deleted the repo",
+        time: new Date().toISOString(),
+    });
+})
 
 app.listen(8000, () => {
     console.log('Server is running on http://localhost:8000');

@@ -9,7 +9,7 @@ export const projects: {
         dockerLocations: [
             "./projects/test1"
         ],
-        host: "gheu",
+        host: "bleh",
         port: 5000
     },
     "127.0.0.1": {

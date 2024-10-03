@@ -5,7 +5,7 @@ services:
     working_dir: /app
     command: pnpm dev
     environment:
-      - ABSOLUTE_PATH=${ABSOLUTE_PATH:-/home/bmqube/Documents/turret}
+      - ABSOLUTE_PATH=${TURRET_PATH}
       - INTERVAL_TO_CHECK=1000
       - TIME_OUT=60000
       - REDIS_URL=redis://default:${REDIS_PASSWORD:-redis}@redis:6379
@@ -17,20 +17,38 @@ services:
         published: 8000
     volumes:
       - ./:/app/
-      - /run/user/1000/docker.sock:/var/run/docker.sock
+      - ${TURRET_DOCKER_SOCKET}:/var/run/docker.sock
     networks:
       - turret_network
 
   redis:
-   container_name: redis-container
-   ports:
-     - target: 6379
-       published: 6379
-   image: bitnami/redis:6.0
-   environment:
-     REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
-   networks:
-     - turret_network
+    container_name: turret-redis
+    ports:
+      - target: 6379
+        published: 6379
+    image: bitnami/redis:6.0
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
+    networks:
+      - turret_network
+
+  # traefik:
+  #   restart: unless-stopped
+  #   container_name: turret-traefik
+  #   dns:
+  #     - "8.8.8.8"
+  #   ports:
+  #     - target: 80
+  #       published: 80
+  #     - target: 443
+  #       published: 443
+  #   build:
+  #     context: ./infra/traefik
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./_DATA/traefik-storage:/traefik-storage
+  #   networks:
+  #     - turret_network
 
 networks:
   turret_network:

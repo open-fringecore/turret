@@ -9,11 +9,6 @@ services:
     volumes:
       - /home/bmqube/Documents/turret/projects/test1:/app/
     networks:
-      test1_network: {}
-      turret_network:
-        aliases:
-          - gheu
-
 networks:
   test1_network:
     name: test1_network
